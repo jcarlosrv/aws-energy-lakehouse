@@ -5,3 +5,7 @@ __pycache__/
 build/
 *.zip
 .pytest_cache/
+
+#adds locals
+response*.json
+payload*.json

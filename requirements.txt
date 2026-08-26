@@ -1,0 +1,4 @@
+entsoe-py
+requests
+beautifulsoup4
+pytz
