@@ -2,3 +2,7 @@
 pandas
 pyarrow
 boto3
+pytest
+lightgbm==4.7.0
+pandas==3.0.5
+holidays
