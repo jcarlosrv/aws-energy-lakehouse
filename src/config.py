@@ -21,3 +21,16 @@ LOOKBACK_DAYS = 8
 
 PLAUSIBLE_LOAD_MIN = 0.0
 PLAUSIBLE_LOAD_MAX = 120_000.0
+ATHENA_DATABASE = "energy"
+ATHENA_TABLE = "entsoe_load"
+ATHENA_WORKGROUP = "primary"
+ATHENA_RESULTS_PREFIX = "athena-results"
+
+MODEL_KEY = "models/model.txt"
+METRICS_KEY = "models/metrics.json"
+FORECAST_PREFIX = "forecasts"
+DASHBOARD_KEY = "dashboard/latest.json"
+
+HORIZON_HOURS = 168
+MAX_STALENESS_HOURS = 72
+HISTORY_MONTHS = 2
