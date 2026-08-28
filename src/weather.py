@@ -5,7 +5,7 @@ from config import CITIES, WEATHER_VARIABLES
 
 ARCHIVE_URL = "https://historical-forecast-api.open-meteo.com/v1/forecast"
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
-TIMEOUT_SECONDS = 30
+TIMEOUT_SECONDS = 90
 
 
 class WeatherError(RuntimeError):

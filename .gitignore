@@ -9,3 +9,6 @@ build/
 #adds locals
 response*.json
 payload*.json
+
+#cache
+.weather-cache/
