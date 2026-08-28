@@ -45,7 +45,7 @@ def history(country, start, end):
     )
 
 
-def forecast(country, days=8):
+def forecast(country, days=8, past_days=7):
     latitude, longitude = CITIES[country]
     return _get(
         FORECAST_URL,
@@ -53,6 +53,6 @@ def forecast(country, days=8):
             "latitude": latitude,
             "longitude": longitude,
             "forecast_days": days,
-            "past_days": 7,
+            "past_days": past_days,
         },
     )

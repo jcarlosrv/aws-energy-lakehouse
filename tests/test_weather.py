@@ -3,7 +3,6 @@ import pytest
 
 import weather
 
-
 def test_frame_parses_the_hourly_block():
     payload = {
         "hourly": {

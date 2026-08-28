@@ -37,6 +37,8 @@ FEATURE_COLUMNS = [
     "cooling_degrees",
 ]
 
+REQUIRED_COLUMNS = [*LAG_COLUMNS, *WEATHER_COLUMNS, "temp_delta_168h"]
+
 CATEGORICAL_COLUMNS = ["country"]
 
 def clean_load(history):
