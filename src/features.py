@@ -7,6 +7,7 @@ ROLL_OFFSET_HOURS = 168
 MIN_HISTORY_HOURS = 504
 MIN_PLAUSIBLE_LOAD_MW = 500.0
 INTERPOLATE_LIMIT_HOURS = 3
+BASE_TEMPERATURE_C = 18.0
 
 COUNTRY_CODES = ("DE", "FR", "ES", "IT", "PL")
 
@@ -32,6 +33,8 @@ FEATURE_COLUMNS = [
     "temp_delta_168h",
     "temp_x_hour",
     "country",
+    "heating_degrees",
+    "cooling_degrees",
 ]
 
 CATEGORICAL_COLUMNS = ["country"]
@@ -81,6 +84,10 @@ def build_features(history, targets, country, weather):
         .to_numpy()
     )
     frame["temp_x_hour"] = frame["temperature_2m"] * frame["hour"]
+
+    temperature = frame["temperature_2m"]
+    frame["heating_degrees"] = (BASE_TEMPERATURE_C - temperature).clip(lower=0)
+    frame["cooling_degrees"] = (temperature - BASE_TEMPERATURE_C).clip(lower=0)
 
     frame["country"] = pd.Categorical([country] * len(index), categories=COUNTRY_CODES)
 

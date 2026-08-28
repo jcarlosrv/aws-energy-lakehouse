@@ -100,3 +100,15 @@ def test_temp_delta_is_this_hour_minus_the_same_hour_last_week():
     target = targets[0]
     expected = series.loc[target] - series.loc[target - pd.Timedelta(hours=168)]
     assert frame["temp_delta_168h"].iloc[0] == pytest.approx(expected)
+
+
+def test_degree_features_hinge_at_the_base_temperature():
+    history = _history(hours=600)
+    targets = pd.DatetimeIndex(
+        ["2025-11-20 00:00", "2025-11-20 01:00", "2025-11-20 02:00"]
+    )
+    observed = _weather(hours=1000)
+    observed.loc[observed["timestamp"].isin(targets), "temperature_2m"] = [8.0, 18.0, 25.0]
+    frame = features.build_features(history, targets, "DE", observed)
+    assert frame["heating_degrees"].tolist() == [10.0, 0.0, 0.0]
+    assert frame["cooling_degrees"].tolist() == [0.0, 0.0, 7.0]
