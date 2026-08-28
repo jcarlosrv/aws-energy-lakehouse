@@ -5,6 +5,8 @@ LAG_HOURS = (168, 336, 504)
 ROLL_WINDOW_HOURS = 168
 ROLL_OFFSET_HOURS = 168
 MIN_HISTORY_HOURS = 504
+MIN_PLAUSIBLE_LOAD_MW = 500.0
+INTERPOLATE_LIMIT_HOURS = 3
 
 COUNTRY_CODES = ("DE", "FR", "ES", "IT", "PL", "NL")
 
@@ -24,6 +26,14 @@ FEATURE_COLUMNS = [
 
 CATEGORICAL_COLUMNS = ["country"]
 
+def clean_load(history):
+    """Blank implausible readings and bridge short gaps."""
+    cleaned = history.sort_values("timestamp").copy()
+    cleaned.loc[cleaned["load_mw"] < MIN_PLAUSIBLE_LOAD_MW, "load_mw"] = float("nan")
+    cleaned["load_mw"] = cleaned["load_mw"].interpolate(
+        limit=INTERPOLATE_LIMIT_HOURS, limit_area="inside"
+    )
+    return cleaned
 
 def build_features(history, targets, country):
     series = history.set_index("timestamp")["load_mw"].sort_index()

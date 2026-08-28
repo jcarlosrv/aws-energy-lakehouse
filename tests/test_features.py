@@ -60,3 +60,21 @@ def test_insufficient_history_yields_nan_rather_than_raising():
     targets = _targets_after(history, count=1)
     frame = features.build_features(history, targets, "DE")
     assert frame[features.LAG_COLUMNS].isna().any().any()
+
+def _load_series(values):
+    stamps = pd.date_range("2026-01-01", periods=len(values), freq="h")
+    return pd.DataFrame({"timestamp": stamps, "load_mw": [float(v) for v in values]})
+
+def test_clean_load_bridges_an_isolated_bad_reading():
+    frame = features.clean_load(_load_series([40000, 41000, 0, 43000, 44000]))
+    assert frame["load_mw"].iloc[2] == pytest.approx(42000.0)
+
+
+def test_clean_load_leaves_a_long_outage_as_nan():
+    frame = features.clean_load(_load_series([40000] + [0] * 6 + [45000]))
+    assert frame["load_mw"].isna().any()
+
+
+def test_clean_load_leaves_plausible_values_untouched():
+    frame = features.clean_load(_load_series([40000, 41000, 42000]))
+    assert frame["load_mw"].tolist() == [40000.0, 41000.0, 42000.0]
