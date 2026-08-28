@@ -34,3 +34,18 @@ DASHBOARD_KEY = "dashboard/latest.json"
 HORIZON_HOURS = 168
 MAX_STALENESS_HOURS = 72
 HISTORY_MONTHS = 2
+
+WEATHER_VARIABLES = (
+    "temperature_2m",
+    "relative_humidity_2m",
+    "wind_speed_10m",
+    "direct_radiation",
+)
+
+CITIES = {
+    "DE": (52.5200, 13.4050),
+    "FR": (48.8566, 2.3522),
+    "ES": (40.4168, -3.7038),
+    "IT": (41.9028, 12.4964),
+    "PL": (52.2297, 21.0122),
+}

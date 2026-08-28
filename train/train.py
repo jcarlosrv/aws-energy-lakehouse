@@ -20,7 +20,9 @@ EARLY_STOPPING_ROUNDS = 50
 
 
 def load_history():
-    frame = run_query(f"SELECT country, timestamp, load_mw FROM {ATHENA_TABLE}")
+    frame = run_query(
+        f"SELECT country, timestamp, load_mw FROM {ATHENA_TABLE} WHERE country <> 'NL'"
+    )
     frame["timestamp"] = pd.to_datetime(frame["timestamp"])
     return frame.sort_values(["country", "timestamp"])
 

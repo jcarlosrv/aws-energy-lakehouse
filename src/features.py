@@ -8,9 +8,16 @@ MIN_HISTORY_HOURS = 504
 MIN_PLAUSIBLE_LOAD_MW = 500.0
 INTERPOLATE_LIMIT_HOURS = 3
 
-COUNTRY_CODES = ("DE", "FR", "ES", "IT", "PL", "NL")
+COUNTRY_CODES = ("DE", "FR", "ES", "IT", "PL")
 
 LAG_COLUMNS = [f"load_lag_{lag}h" for lag in LAG_HOURS]
+
+WEATHER_COLUMNS = [
+    "temperature_2m",
+    "relative_humidity_2m",
+    "wind_speed_10m",
+    "direct_radiation",
+]
 
 FEATURE_COLUMNS = [
     "hour",
@@ -21,6 +28,9 @@ FEATURE_COLUMNS = [
     *LAG_COLUMNS,
     "load_roll_mean_168h",
     "load_roll_std_168h",
+    *WEATHER_COLUMNS,
+    "temp_delta_168h",
+    "temp_x_hour",
     "country",
 ]
 
@@ -35,7 +45,7 @@ def clean_load(history):
     )
     return cleaned
 
-def build_features(history, targets, country):
+def build_features(history, targets, country, weather):
     series = history.set_index("timestamp")["load_mw"].sort_index()
     rolling = series.rolling(ROLL_WINDOW_HOURS, min_periods=ROLL_WINDOW_HOURS)
     roll_mean = rolling.mean()
@@ -59,6 +69,18 @@ def build_features(history, targets, country):
     offset = index - pd.Timedelta(hours=ROLL_OFFSET_HOURS)
     frame["load_roll_mean_168h"] = roll_mean.reindex(offset).to_numpy()
     frame["load_roll_std_168h"] = roll_std.reindex(offset).to_numpy()
+
+    observed = weather.set_index("timestamp").sort_index()
+    for column in WEATHER_COLUMNS:
+        frame[column] = observed[column].reindex(index).to_numpy()
+
+    frame["temp_delta_168h"] = (
+        frame["temperature_2m"].to_numpy()
+        - observed["temperature_2m"]
+        .reindex(index - pd.Timedelta(hours=ROLL_OFFSET_HOURS))
+        .to_numpy()
+    )
+    frame["temp_x_hour"] = frame["temperature_2m"] * frame["hour"]
 
     frame["country"] = pd.Categorical([country] * len(index), categories=COUNTRY_CODES)
 
