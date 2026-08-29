@@ -36,12 +36,12 @@ jobs:
         run: |
           mkdir -p docs/data
           mv latest.json docs/data/latest.json
-          if git diff --quiet -- docs/data/latest.json; then
+          git add docs/data/latest.json
+          if git diff --cached --quiet -- docs/data/latest.json; then
             echo "payload unchanged; nothing to commit"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/data/latest.json
           git commit -m "update dashboard data"
           git push
