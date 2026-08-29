@@ -9,6 +9,7 @@ build/
 #adds locals
 response*.json
 payload*.json
+/oidc-trust.tmp.json
 
 #cache
 .weather-cache/
