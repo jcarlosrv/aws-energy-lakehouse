@@ -1,0 +1,38 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [ "s3:ListBucket", "s3:GetBucketLocation" ],
+      "Resource": "arn:aws:s3:::jcarlosrv-energy-lakehouse"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [ "s3:GetObject", "s3:PutObject" ],
+      "Resource": "arn:aws:s3:::jcarlosrv-energy-lakehouse/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "athena:StartQueryExecution",
+        "athena:GetQueryExecution",
+        "athena:GetQueryResults",
+        "athena:GetWorkGroup"
+      ],
+      "Resource": "arn:aws:athena:us-east-1:<ACCOUNT_ID>:workgroup/primary"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "glue:GetDatabase",
+        "glue:GetTable",
+        "glue:GetPartitions"
+      ],
+      "Resource": [
+        "arn:aws:glue:us-east-1:<ACCOUNT_ID>:catalog",
+        "arn:aws:glue:us-east-1:<ACCOUNT_ID>:database/energy",
+        "arn:aws:glue:us-east-1:<ACCOUNT_ID>:table/energy/*"
+      ]
+    }
+  ]
+}
