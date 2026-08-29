@@ -12,7 +12,7 @@
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
         },
         "StringLike": {
-          "token.actions.githubusercontent.com:sub": "repo:jcarlosrv@28468637/aws-energy-lakehouse@1347847580:*"
+          "token.actions.githubusercontent.com:sub": "repo:jcarlosrv@28468637/aws-energy-lakehouse@1347847580:ref:refs/heads/main"
         }
       }
     }
