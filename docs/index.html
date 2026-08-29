@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>European electricity load forecast</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="viz-root">
+        <header>
+            <h1>European electricity load forecast</h1>
+            <p class="sub">A 168-hour load forecast for five European grids, republished weekly from ENTSO-E data.</p>
+        </header>
+
+        <section class="strip" id="headline"></section>
+
+        <section class="panel">
+            <div class="row">
+                <div class="tabs" id="tabs" role="tablist"></div>
+                <div class="legend" id="legend"></div>
+            </div>
+            <div id="hero" class="hero"></div>
+        </section>
+
+        <section class="panel">
+            <h2>All five grids</h2>
+            <div id="multiples" class="multiples"></div>
+        </section>
+
+        <footer>
+            <p id="issued"></p>
+            <p>Forecast written by an AWS Lambda reading a partitioned Parquet lakehouse through Athena. This page is static and makes no AWS calls.</p>
+        </footer>
+    </main>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
