@@ -5,6 +5,6 @@ RUN dnf install -y libgomp && dnf clean all
 COPY requirements-lambda.txt ${LAMBDA_TASK_ROOT}/
 RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements-lambda.txt -t ${LAMBDA_TASK_ROOT}
 
-COPY src/config.py src/features.py src/athena.py src/weather.py src/forecast_handler.py ${LAMBDA_TASK_ROOT}/
+COPY src/config.py src/features.py src/athena.py src/weather.py src/forecast_handler.py src/dashboard.py ${LAMBDA_TASK_ROOT}/
 
 CMD ["forecast_handler.handler"]

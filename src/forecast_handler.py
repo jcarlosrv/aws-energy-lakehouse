@@ -6,15 +6,18 @@ import boto3
 import pandas as pd
 
 import features
+import dashboard
 import weather
 from athena import run_query
 from config import (
     ATHENA_TABLE,
     BUCKET,
+    DASHBOARD_KEY,
     FORECAST_PREFIX,
     HISTORY_MONTHS,
     HORIZON_HOURS,
     MAX_STALENESS_HOURS,
+    METRICS_KEY,
     MODEL_KEY,
 )
 
@@ -101,6 +104,21 @@ def _write_forecast(country, issued, frame):
     _s3_client().put_object(Bucket=BUCKET, Key=key, Body=buffer.getvalue())
     return key
 
+def _previous_forecasts(countries):
+    frames = []
+    client = _s3_client()
+    for country in countries:
+        prefix = f"{FORECAST_PREFIX}/country={country}/"
+        listing = client.list_objects_v2(Bucket=BUCKET, Prefix=prefix)
+        for item in sorted(listing.get("Contents", []), key=lambda o: o["Key"])[-2:]:
+            body = client.get_object(Bucket=BUCKET, Key=item["Key"])["Body"].read()
+            frame = pd.read_parquet(io.BytesIO(body))
+            frame["country"] = country
+            frames.append(frame)
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(
+        columns=["timestamp", "predicted_mw", "country"]
+    )
+
 
 def handler(event, context):
     event = event or {}
@@ -153,5 +171,21 @@ def handler(event, context):
 
     if not written:
         raise RuntimeError(f"no country produced a forecast at {issued.isoformat()}")
+
+    try:
+        metrics = json.loads(
+            _s3_client().get_object(Bucket=BUCKET, Key=METRICS_KEY)["Body"].read()
+        )
+    except _s3_client().exceptions.NoSuchKey:
+        metrics = {}
+
+    payload = dashboard.build_payload(
+        history, _previous_forecasts(written), metrics, issued
+    )
+    _s3_client().put_object(
+        Bucket=BUCKET,
+        Key=DASHBOARD_KEY,
+        Body=json.dumps(payload).encode("utf-8"),
+    )
 
     return summary
