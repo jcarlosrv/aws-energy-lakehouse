@@ -83,7 +83,7 @@ async function main() {
     const codes = Object.keys(payload.countries).sort();
 
     document.getElementById("issued").textContent =
-        `Data through ${new Date(issued).toISOString().slice(0, 16).replace("T", " ")} UTC. Republished every Monday at 07:00 UTC.`;
+        `Data through ${new Date(issued).toISOString().slice(0, 16).replace("T", " ")} UTC. Forecast issued Mondays 07:00 UTC, this page republished at 08:00 UTC.`;
 
     renderHeadline(payload);
     renderLegend();
