@@ -1,5 +1,6 @@
 import io
 import json
+import re
 
 import boto3
 import pandas as pd
@@ -91,6 +92,10 @@ def _merge_partition(code, year, month, incoming):
     client.put_object(Bucket=BUCKET, Key=key, Body=buffer.getvalue())
     return len(merged)
 
+_TOKEN_QUERY = re.compile(r"(securityToken=)[^&\s]+", re.IGNORECASE)
+
+def _safe_detail(exc):
+    return _TOKEN_QUERY.sub(r"\1***", f"{type(exc).__name__}: {exc}")
 
 def handler(event, context):
     start, end = _resolve_window(event or {})
@@ -104,7 +109,7 @@ def handler(event, context):
             results[code] = {"status": "no_data"}
             continue
         except Exception as exc:
-            results[code] = {"status": "error", "detail": f"{type(exc).__name__}: {exc}"}
+            results[code] = {"status": "error", "detail": _safe_detail(exc)}
             continue
 
         _write_raw(code, series, start, end)
