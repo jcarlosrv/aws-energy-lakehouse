@@ -15,4 +15,6 @@ payload*.json
 .weather-cache/
 /forecast-*.json
 /ingest-*.json
+/out.json
+/fc.json
 

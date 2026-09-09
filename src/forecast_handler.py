@@ -119,6 +119,13 @@ def _previous_forecasts(countries):
         columns=["timestamp", "predicted_mw", "country"]
     )
 
+def usability(built):
+    degraded = {
+        column: int(count)
+        for column, count in built[features.REQUIRED_COLUMNS].isna().sum().items()
+        if count
+    }
+    return not built[features.ESSENTIAL_COLUMNS].isna().any().any(), degraded
 
 def handler(event, context):
     event = event or {}
@@ -147,8 +154,9 @@ def handler(event, context):
         built = features.build_features(
             features.clean_load(group), targets, country, observed
         )
-        if built[features.REQUIRED_COLUMNS].isna().any().any():
-            skipped[country] = {"status": "insufficient_history"}
+        usable, degraded = usability(built)
+        if not usable:
+            skipped[country] = {"status": "insufficient_history", "nan_columns": degraded}
             continue
 
         # the model predicts the residual against seasonal naive, so add it back
@@ -165,6 +173,8 @@ def handler(event, context):
             ),
         )
         written[country] = {"status": "ok", "hours": len(targets), "key": key}
+        if degraded:
+            written[country]["degraded_features"] = degraded
 
     summary = {"issued": issued.isoformat(), "countries": written, "skipped": skipped}
     print(json.dumps(summary))

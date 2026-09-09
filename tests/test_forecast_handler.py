@@ -91,3 +91,55 @@ def test_nl_is_excluded_from_the_history_query(monkeypatch):
     monkeypatch.setattr(forecast_handler, "run_query", fake_run_query)
     forecast_handler.load_history(pd.Timestamp("2026-03-04 07:00"))
     assert "country <> 'NL'" in captured["sql"]
+
+
+def _history_with_gap(gap_day, hours=2000, end="2026-03-01 00:00"):
+    last = pd.Timestamp(end)
+    stamps = pd.date_range(last - pd.Timedelta(hours=hours - 1), periods=hours, freq="h")
+    frame = pd.DataFrame(
+        {
+            "country": "FR",
+            "timestamp": stamps,
+            "load_mw": np.arange(hours, dtype=float) + 1000.0,
+        }
+    )
+    gap = pd.Timestamp(gap_day)
+    return frame[
+        (frame["timestamp"] < gap) | (frame["timestamp"] >= gap + pd.Timedelta(days=1))
+    ]
+
+
+def _flat_weather(targets):
+    index = pd.date_range(targets.min() - pd.Timedelta(hours=336), targets.max(), freq="h")
+    return pd.DataFrame(
+        {
+            "timestamp": index,
+            "temperature_2m": 10.0,
+            "relative_humidity_2m": 50.0,
+            "wind_speed_10m": 5.0,
+            "direct_radiation": 100.0,
+        }
+    )
+
+
+def _built(gap_day):
+    anchor = pd.Timestamp("2026-03-01 00:00")
+    targets = pd.date_range(anchor + pd.Timedelta(hours=1), periods=168, freq="h")
+    history = _history_with_gap(gap_day)
+    return features.build_features(
+        features.clean_load(history), targets, "FR", _flat_weather(targets)
+    )
+
+
+def test_a_gap_outside_the_seasonal_base_still_forecasts():
+    # Feb 18 lands in the lag_336h window (Feb 15 01:00 - Feb 22 00:00)
+    usable, degraded = forecast_handler.usability(_built("2026-02-18"))
+    assert usable
+    assert "load_lag_336h" in degraded
+
+
+def test_a_gap_in_the_seasonal_base_is_still_skipped():
+    # Feb 25 lands in the lag_168h window (Feb 22 01:00 - Mar 1 00:00)
+    usable, degraded = forecast_handler.usability(_built("2026-02-25"))
+    assert not usable
+    assert degraded["load_lag_168h"] == 24
