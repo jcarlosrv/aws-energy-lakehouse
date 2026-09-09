@@ -31,9 +31,16 @@ def test_a_good_payload_is_accepted(tmp_path):
     assert run(tmp_path, json.dumps(GOOD)).returncode == 0
 
 
-def test_a_missing_country_is_rejected(tmp_path):
+def test_a_partial_payload_is_accepted(tmp_path):
     payload = json.loads(json.dumps(GOOD))
-    del payload["countries"]["PL"]
+    del payload["countries"]["DE"]
+    del payload["countries"]["ES"]
+    assert run(tmp_path, json.dumps(payload)).returncode == 0
+
+
+def test_an_unknown_country_is_rejected(tmp_path):
+    payload = json.loads(json.dumps(GOOD))
+    payload["countries"]["XX"] = payload["countries"]["FR"]
     assert run(tmp_path, json.dumps(payload)).returncode != 0
 
 
