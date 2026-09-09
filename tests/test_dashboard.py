@@ -30,7 +30,7 @@ def test_recent_carries_the_trailing_actuals_for_each_country():
         {"country": "DE", "timestamp": stamps, "predicted_mw": [9.0] * 5}
     )
     payload = dashboard.build_payload(
-        actuals, forecasts, {}, pd.Timestamp("2026-03-01 04:00"), recent_hours=3
+        actuals, forecasts, {}, pd.Timestamp("2026-03-01 04:00"), window_hours=3
     )
     recent = payload["countries"]["DE"]["recent"]
     assert len(recent) == 3
@@ -44,3 +44,18 @@ def test_recent_is_empty_when_a_country_has_no_actuals():
     forecasts = pd.DataFrame({"country": "ES", "timestamp": stamps, "predicted_mw": [9.0] * 3})
     payload = dashboard.build_payload(actuals, forecasts, {}, pd.Timestamp("2026-03-01 02:00"))
     assert payload["countries"]["ES"]["recent"] == []
+
+def test_the_window_is_symmetric_around_issued():
+    issued = pd.Timestamp("2026-03-08 00:00")
+    stamps = pd.date_range("2026-02-28 00:00", "2026-03-16 00:00", freq="h")
+    forecasts = pd.DataFrame({"country": "DE", "timestamp": stamps, "predicted_mw": 9.0})
+    actuals = pd.DataFrame({"country": "DE", "timestamp": stamps, "load_mw": 10.0})
+    payload = dashboard.build_payload(actuals, forecasts, {}, issued, window_hours=168)
+    forecast = payload["countries"]["DE"]["forecast"]
+    recent = payload["countries"]["DE"]["recent"]
+    assert len(forecast) == 336
+    assert forecast[0]["timestamp"] == "2026-03-01T01:00:00"
+    assert forecast[-1]["timestamp"] == "2026-03-15T00:00:00"
+    assert len(recent) == 168
+    assert recent[-1]["timestamp"] == "2026-03-08T00:00:00"
+    assert recent[0] == {"timestamp": "2026-03-01T01:00:00", "actual_mw": 10.0}

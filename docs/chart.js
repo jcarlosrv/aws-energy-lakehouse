@@ -20,9 +20,13 @@ function ticks(min, max, count) {
     return out;
 }
 
+const MAX_JOIN_MS = 3600 * 1000;
 function pathFor(points, x, y) {
     return points
-        .map((p, i) => `${i ? "L" : "M"}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`)
+        .map((p, i) => {
+            const command = i && p.t - points[i - 1].t <= MAX_JOIN_MS ? "L" : "M";
+            return `${command}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`;
+        })
         .join("");
 }
 
@@ -45,7 +49,8 @@ export function drawChart(host, { recent, forecast, issued, compact = false }) {
     const hi = Math.max(...values);
     const room = (hi - lo) * 0.12 || 1;
 
-    const x = linear([series[0].t, series[series.length - 1].t], [pad.left, width - pad.right]);
+    const stamps = series.map((p) => p.t);
+    const x = linear([Math.min(...stamps), Math.max(...stamps)], [pad.left, width - pad.right]);
     const y = linear([lo - room, hi + room], [height - pad.bottom, pad.top]);
 
     const svg = el("svg", { viewBox: `0 0 ${width} ${height}`, width: "100%", height });
